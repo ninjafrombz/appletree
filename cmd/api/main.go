@@ -12,28 +12,29 @@ import (
 )
 
 const version = "1.0.0"
-// The configuration settings 
+
+// The configuration settings
 
 type config struct {
 	port int
-	env string // development, staging, production, etc.
+	env  string // development, staging, production, etc.
 }
 
-// DEpendency injection 
+// DEpendency injection
 type application struct {
 	config config
 	logger *log.Logger
 }
 
-func main () {
+func main() {
 	var cfg config
-	// read in the flags that are needed to populate our config 
+	// read in the flags that are needed to populate our config
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment (development | staging | production)")
 	flag.Parse()
 
 	// create a logger
-	logger := log.New(os.Stdout, "", log.Ldate | log.Ltime)
+	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
 	//create an instancr of application struct
 	app := &application{
@@ -44,12 +45,12 @@ func main () {
 	// create new serve mux
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v1/healthcheck", app.healthcheckHandler)
-	// Create our http server 
+	// Create our http server
 	srv := &http.Server{
-		Addr: fmt.Sprintf(":%d", cfg.port),
-		Handler: mux,
-		IdleTimeout: time.Minute,
-		ReadTimeout: 10 * time.Second,
+		Addr:         fmt.Sprintf(":%d", cfg.port),
+		Handler:      mux,
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
 
@@ -58,7 +59,6 @@ func main () {
 	logger.Fatal(err)
 
 }
-
 
 // func main () {
 
