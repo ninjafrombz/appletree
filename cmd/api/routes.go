@@ -12,7 +12,7 @@ func (app *application) routes() *httprouter.Router {
 	// Create
 	router := httprouter.New()
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
-	router.HandlerFunc(http.MethodPost, "/v1/schools", app.CreateSchoolHandler)
+	router.HandlerFunc(http.MethodPost, "/v1/schools", app.createSchoolHandler)
 	router.HandlerFunc(http.MethodGet, "/v1/schools/:id", app.showSchoolHandler)
 
 	return router
