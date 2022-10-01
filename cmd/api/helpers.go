@@ -22,3 +22,12 @@ func (app *application) readIDParam(r *http.Request) (int64, error) {
 	//Display the school id
 
 }
+
+// func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
+// 	js := `{"status":"available", "environment": %q, "version": %q}`
+// 	js = fmt.Sprintf(js, app.config.env, version)
+// 	// Specify that we will serve our responses using JSON 
+// 	w.Header().Set("Content-Type", "application/json")
+// 	// write the json as the HTTP 
+// 	w.Write([]byte(js)) 
+// }
