@@ -2,6 +2,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
@@ -23,6 +24,26 @@ func (app *application) readIDParam(r *http.Request) (int64, error) {
 
 }
 
+
+func (app *application) writeJSON(w http.ResponseWriter, status int, data interface{}, headers http.Header) (error) {
+	js, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	js = append(js, '\n')
+	// Add any of the headers 
+	for key, value := range headers {
+		w.Header()[key] = value 
+	}
+
+	// SPecify that we will serve our responses using JSON 
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	//Write the byte slice containing the json response body
+	w.Write(js)
+	return nil
+
+}
 // func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 // 	js := `{"status":"available", "environment": %q, "version": %q}`
 // 	js = fmt.Sprintf(js, app.config.env, version)
