@@ -12,6 +12,7 @@ import (
 	"os"
 	"time"
 
+	"appletree.desireamagwula.net/internals/data"
 	_ "github.com/lib/pq"
 )
 
@@ -22,11 +23,11 @@ const version = "1.0.0"
 type config struct {
 	port int
 	env  string // development, staging, production, etc.
-	db struct {
-		dsn string
+	db   struct {
+		dsn          string
 		maxOpenConns int
 		maxIdleConns int
-		maxIdleTime string
+		maxIdleTime  string
 	}
 }
 
@@ -34,6 +35,7 @@ type config struct {
 type application struct {
 	config config
 	logger *log.Logger
+	models data.Models
 }
 
 func main() {
@@ -56,13 +58,14 @@ func main() {
 	}
 
 	defer db.Close()
-	// LOg the succesful 
+	// LOg the succesful
 	logger.Println("database connection pool established")
 
 	//create an instancr of application struct
 	app := &application{
 		config: cfg,
 		logger: logger,
+		models: data.NewModels(db),
 	}
 
 	// create new serve mux
@@ -98,8 +101,8 @@ func openDB(cfg config) (*sql.DB, error) {
 	}
 	db.SetConnMaxIdleTime(duration)
 	// Create a context with a 5-second timeout timeline
-	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
-	defer cancel() 
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	err = db.PingContext(ctx)
 	if err != nil {
@@ -107,5 +110,3 @@ func openDB(cfg config) (*sql.DB, error) {
 	}
 	return db, nil
 }
-
-
