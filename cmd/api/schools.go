@@ -182,7 +182,12 @@ func (app *application) updateSchoolHandler(w http.ResponseWriter, r *http.Reque
 	// Let's pass the updated school record to the Update() method 
 	err = app.models.Schools.Update(school)
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		switch {
+		case errors.Is(err, data.ErrEditConflict):
+			app.editConflictResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
 		return 
 	}
 	// Write the data returned by Get()

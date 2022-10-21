@@ -154,22 +154,22 @@ func (m SchoolModel) Update(school *School) error {
 		school.ID,
 		school.Version,
 	}
-	return m.DB.QueryRow(query, args...).Scan(&school.Version)
-	// Create a context
-	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	// Cleanup to prevent memory leaks
-	// defer cancel()
+	
+	//Create a context
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	//Cleanup to prevent memory leaks
+	defer cancel()
 	// Check for edit conflicts
-	// err := m.DB.QueryRowContext(ctx, query, args...).Scan(&school.Version)
-	// if err != nil {
-	// 	switch {
-	// 	case errors.Is(err, sql.ErrNoRows):
-	// 		return ErrEditConflict
-	// 	default:
-	// 		return err
-	// 	}
-	// }
-	// return nil
+	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&school.Version)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrEditConflict
+		default:
+			return err
+		}
+	}
+	return nil
 
 }
 
