@@ -93,24 +93,83 @@ func (app *application) showSchoolHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// //Create a new instance of the school struct containing the ID we extracted
-	// // from our URL and some sample data
-
-	// school := data.School{
-	// 	ID:        id,
-	// 	CreatedAt: time.Now(),
-	// 	Name:      "Apple Tree",
-	// 	Level:     "High School",
-	// 	Contact:   "Anna Smith",
-	// 	Phone:     "654-1651",
-	// 	Address:   "14 Apple Steet",
-	// 	Mode:      []string{"blended", "online"},
-	// 	Version:   1,
-	// }
-
 	// Write the sdata returned by Get()
 	err = app.writeJSON(w, http.StatusOK, envelope{"school": school}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
+}
+
+func (app *application) updateSchoolHandler(w http.ResponseWriter, r *http.Request) {
+	// This method does a complete replacement 
+	// Get the ID for the school that needs updating 
+
+	id, err := app.readIDParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	// Fetch the original record from the database
+	school, err := app.models.Schools.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+
+		return
+	}
+	// Create an input struct to hold data read in from the client 
+	var input struct {
+		Name    string   `json:"name"`
+		Level   string   `json:"level"`
+		Contact string   `json:"contact"`
+		Phone   string   `json:"phone"`
+		Email   string   `json:"email"`
+		Website string   `json:"website"`
+		Address string   `json:"address"`
+		Mode    []string `json:"mode"`
+	}
+
+	// Initialize a new json.Decoder instance
+	err = app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+	// Copy / UPdate the fields or values in the school variable using the fields 
+	// in the input struct
+
+	school.Name = input.Name
+	school.Level = input.Level
+	school.Contact = input.Contact
+	school.Phone = input.Phone
+	school.Email = input.Email
+	school.Website = input.Website
+	school.Address = input.Address
+	school.Mode = input.Mode
+	// Perform some validation on the updated school. If validation fails then we send 
+	// a 422 - unprocessable entity response to the client
+	v := validator.New()
+
+	// Check the map to determine if there were any validation errors
+	if data.ValidateSchool(v, school); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+	// Let's pass the updated school record to the Update() method 
+	err = app.models.Schools.Update(school)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return 
+	}
+	// Write the data returned by Get()
+	err = app.writeJSON(w, http.StatusOK, envelope{"school": school}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+
+
 }

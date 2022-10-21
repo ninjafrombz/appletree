@@ -132,7 +132,44 @@ func (m SchoolModel) Get(id int64) (*School, error) {
 // Update() allows us to edit/alter a specific school
 
 func (m SchoolModel) Update(school *School) error {
-	return nil
+	// Create a query
+	query := `
+		UPDATE schools
+		SET name = $1, level = $2, contact = $3,
+		    phone = $4, email = $5, website = $6,
+			address = $7, mode = $8, version = version + 1
+		WHERE id = $9
+		AND version = $10
+		RETURNING version
+	`
+	args := []interface{}{
+		school.Name,
+		school.Level,
+		school.Contact,
+		school.Phone,
+		school.Email,
+		school.Website,
+		school.Address,
+		pq.Array(school.Mode),
+		school.ID,
+		school.Version,
+	}
+	return m.DB.QueryRow(query, args...).Scan(&school.Version)
+	// Create a context
+	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// Cleanup to prevent memory leaks
+	// defer cancel()
+	// Check for edit conflicts
+	// err := m.DB.QueryRowContext(ctx, query, args...).Scan(&school.Version)
+	// if err != nil {
+	// 	switch {
+	// 	case errors.Is(err, sql.ErrNoRows):
+	// 		return ErrEditConflict
+	// 	default:
+	// 		return err
+	// 	}
+	// }
+	// return nil
 
 }
 
