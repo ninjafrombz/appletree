@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
+	"appletree.desireamagwula.net/internals/validator"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -103,6 +105,50 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst int
 	return nil
 }
 
+// The readString() method returns a string value from the query parameter 
+// string or returns a default value if no matching key is found
+
+func (app *application) readString(qs url.Values, key string, defaultValue string) string {
+	// Get the value 
+	value := qs.Get(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
+}
+
+// The readCSV() method splits a value into a slice based on the comma seperator.
+// if no matching key is found then the default value is used 
+
+func (app *application) readCSV(qs url.Values, key string, defaultValue []string) []string {
+	value := qs.Get(key)
+	if value == "" {
+		return defaultValue
+	}
+	// Split the string based on the comma delimiter 
+	return strings.Split(value, ",")
+
+} 
+
+// The readInt() method converts a string value from the query string to an integer value
+// If the value cannot be converted to an integer then a validation error is to be added to 
+// the validations error map
+
+func readInt(qs url.Values, key string, defaultValue int, v *validator.Validator) int {
+	// Get the value 
+	value := qs.Get(key)
+	if value == "" {
+		return defaultValue
+	}
+	// Perform the conversion to an integer
+	intValue, err := strconv.Atoi(value)
+	if err != nil {
+		v.AddError(key, "Must be an integer value")
+		return defaultValue
+	}
+	return intValue
+	
+}
 // func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 // 	js := `{"status":"available", "environment": %q, "version": %q}`
 // 	js = fmt.Sprintf(js, app.config.env, version)
