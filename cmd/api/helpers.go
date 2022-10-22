@@ -134,7 +134,7 @@ func (app *application) readCSV(qs url.Values, key string, defaultValue []string
 // If the value cannot be converted to an integer then a validation error is to be added to 
 // the validations error map
 
-func readInt(qs url.Values, key string, defaultValue int, v *validator.Validator) int {
+func  (app *application) readInt(qs url.Values, key string, defaultValue int, v *validator.Validator) int {
 	// Get the value 
 	value := qs.Get(key)
 	if value == "" {
