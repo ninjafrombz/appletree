@@ -75,12 +75,12 @@ func (m SchoolModel) Insert(school *School) error {
 		school.Email, school.Website,
 		school.Address, pq.Array(school.Mode),
 	}
-	// // Create a context
-	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	// // Cleanup to prevent memory leaks
-	// defer cancel()
-	// return m.DB.QueryRowContext(ctx, query, args...).Scan(&school.ID, &school.CreatedAt, &school.Version)
-	return m.DB.QueryRow(query, args...).Scan(&school.ID, &school.CreatedAt, &school.Version)
+	// Create a context
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// Cleanup to prevent memory leaks
+	defer cancel()
+	return m.DB.QueryRowContext(ctx, query, args...).Scan(&school.ID, &school.CreatedAt, &school.Version)
+	//return m.DB.QueryRow(query, args...).Scan(&school.ID, &school.CreatedAt, &school.Version)
 }
 
 // Get() allows us to retrieve
@@ -154,7 +154,7 @@ func (m SchoolModel) Update(school *School) error {
 		school.ID,
 		school.Version,
 	}
-	
+
 	//Create a context
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	//Cleanup to prevent memory leaks
