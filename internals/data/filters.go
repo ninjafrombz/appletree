@@ -3,15 +3,16 @@
 package data
 
 import (
+	"math"
 	"strings"
 
 	"appletree.desireamagwula.net/internals/validator"
 )
 
 type Filters struct {
-	Page int
+	Page     int
 	PageSize int
-	Sort string
+	Sort     string
 	SortList []string
 }
 
@@ -25,7 +26,7 @@ func ValidateFilters(v *validator.Validator, f Filters) {
 	v.Check(validator.In(f.Sort, f.SortList...), "sort", "invalid sort value")
 }
 
-// The sort column method safely extracts the sort field query parameter 
+// The sort column method safely extracts the sort field query parameter
 func (f Filters) sortColumn() string {
 	for _, safeValue := range f.SortList {
 		if f.Sort == safeValue {
@@ -35,7 +36,7 @@ func (f Filters) sortColumn() string {
 	panic("unsafe sort parameter: " + f.Sort)
 }
 
-// Get the sort order method determines whether we should sort by descending or ascending. 
+// Get the sort order method determines whether we should sort by descending or ascending.
 func (f Filters) sortOrder() string {
 	if strings.HasPrefix(f.Sort, "-") {
 		return "DESC"
@@ -44,11 +45,33 @@ func (f Filters) sortOrder() string {
 	return "ASC"
 }
 
-// The limit method determines the limit 
+// The limit method determines the limit
 func (f Filters) limit() int {
 	return f.PageSize
 }
 
 func (f Filters) offSet() int {
 	return (f.Page - 1) * f.PageSize
+}
+
+// THe metadata type contains metadat to help with pagination
+type Metadata struct {
+	CurrentPage  int `json:"current_page,omitempty"`
+	PageSize     int `json:"page_size,omitempty"`
+	FirstPage    int `json:"first_page,omitempty"`
+	LastPage     int `json:"last_page,omitempty"`
+	TotalRecords int `json:"total_records,omitempty"`
+}
+
+func calculateMetadata(totalRecrods int, page int, pageSize int) Metadata {
+	if totalRecrods == 0 {
+		return Metadata{}
+	}
+	return Metadata{
+		CurrentPage:  page,
+		PageSize:     pageSize,
+		FirstPage:    1,
+		LastPage:     int(math.Ceil(float64(totalRecrods) / float64(pageSize))),
+		TotalRecords: totalRecrods,
+	}
 }

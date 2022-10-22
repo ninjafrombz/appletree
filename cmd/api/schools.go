@@ -251,18 +251,18 @@ func (app *application) listSchoolsHandler(w http.ResponseWriter, r *http.Reques
 	// Specify the allowed sort values
 	input.Filters.SortList = []string{"id", "name", "level", "-id", "-name", "-level"}
 	// CHeck for validation error
-	if data.ValidateFilters(v, input.Filters);!v.Valid() {
+	if data.ValidateFilters(v, input.Filters); !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 	// Get a listing of all schools
-	schools, err := app.models.Schools.GetAll(input.Name, input.Level, input.Mode, input.Filters)
+	schools, metadata, err := app.models.Schools.GetAll(input.Name, input.Level, input.Mode, input.Filters)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
-	// Send a JSON response containing all the schools 
-	err = app.writeJSON(w, http.StatusOK, envelope{"schools": schools}, nil)
+	// Send a JSON response containing all the schools
+	err = app.writeJSON(w, http.StatusOK, envelope{"schools": schools, "metadata ": metadata}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

@@ -207,10 +207,10 @@ func (m SchoolModel) Delete(id int64) error {
 	return nil
 
 }
-func (m SchoolModel) GetAll(name string, level string, mode []string, filters Filters) ([]*School, error) {
+func (m SchoolModel) GetAll(name string, level string, mode []string, filters Filters) ([]*School, Metadata, error) {
 	// Construct the query
 	query := fmt.Sprintf(`
-		SELECT id, created_at, name, level,
+		SELECT COUNT (*) OVER(), id, created_at, name, level,
 		       contact, phone, email, website,
 			   address, mode, version
 		FROM schools
@@ -226,9 +226,10 @@ func (m SchoolModel) GetAll(name string, level string, mode []string, filters Fi
 	// Execute the query
 	rows, err := m.DB.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return nil, Metadata{}, err
 	}
 	defer rows.Close()
+	totalRecords := 0
 	// Initialize an empty slice
 	schools := []*School{}
 	// iterate over the rows in the resultset
@@ -236,6 +237,7 @@ func (m SchoolModel) GetAll(name string, level string, mode []string, filters Fi
 		var school School
 		// SCan the valuies from the row into the school
 		err := rows.Scan(
+			&totalRecords,
 			&school.ID,
 			&school.CreatedAt,
 			&school.Name,
@@ -249,7 +251,7 @@ func (m SchoolModel) GetAll(name string, level string, mode []string, filters Fi
 			&school.Version,
 		)
 		if err != nil {
-			return nil, err
+			return nil, Metadata{}, err
 		}
 
 		schools = append(schools, &school)
@@ -257,8 +259,9 @@ func (m SchoolModel) GetAll(name string, level string, mode []string, filters Fi
 	}
 	// Check if any errors occured after looping through the resultset
 	if err = rows.Err(); err != nil {
-		return nil, err
+		return nil, Metadata{}, err
 	}
+	metadata := calculateMetadata(totalRecords, filters.Page, filters.PageSize)
 	// safely return the resultset
-	return schools, nil
+	return schools, metadata, nil
 }
