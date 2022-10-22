@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"appletree.desireamagwula.net/internals/validator"
@@ -208,7 +209,7 @@ func (m SchoolModel) Delete(id int64) error {
 }
 func (m SchoolModel) GetAll(name string, level string, mode []string, filters Filters) ([]*School, error) {
 	// Construct the query
-	query := `
+	query := fmt.Sprintf(`
 		SELECT id, created_at, name, level,
 		       contact, phone, email, website,
 			   address, mode, version
@@ -216,13 +217,14 @@ func (m SchoolModel) GetAll(name string, level string, mode []string, filters Fi
 		WHERE (to_tsvector('simple', name) @@ plainto_tsquery('simple', $1) OR $1 = '')
 		AND (to_tsvector('simple', level) @@ plainto_tsquery('simple', $2) OR $2 = '')
 		AND (mode @> $3 OR $3 = '{}' )
-		ORDER by id
-		`
+		ORDER by %s %s, id ASC
+		LIMIT $4 OFFSET $5`, filters.sortColumn(), filters.sortOrder())
 	// Create
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
+	args := []interface{}{name, level, pq.Array(mode), filters.limit(), filters.offSet()}
 	// Execute the query
-	rows, err := m.DB.QueryContext(ctx, query, name, level, pq.Array(mode))
+	rows, err := m.DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
