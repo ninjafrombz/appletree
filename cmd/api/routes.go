@@ -8,7 +8,7 @@ import (
 )
 
 
-func (app *application) routes() *httprouter.Router {
+func (app *application) routes() http.Handler {
 	// Create
 	router := httprouter.New()
 	router.NotFound = http.HandlerFunc(app.notFoundResponse)
@@ -20,5 +20,5 @@ func (app *application) routes() *httprouter.Router {
 	router.HandlerFunc(http.MethodPatch, "/v1/schools/:id", app.updateSchoolHandler)
     router.HandlerFunc(http.MethodDelete, "/v1/schools/:id", app.deleteSchoolHandler)
 
-	return router
+	return app.recoverPanic(router)
 }

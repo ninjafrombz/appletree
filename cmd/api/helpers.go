@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-
 	"appletree.desireamagwula.net/internals/validator"
 	"github.com/julienschmidt/httprouter"
 )
