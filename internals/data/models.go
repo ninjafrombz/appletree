@@ -14,6 +14,7 @@ var (
 
 type Models struct {
 	Schools SchoolModel
+	Users UserModel
 }
 
 // NewModels() allows us to create a new MOdels 
@@ -21,5 +22,6 @@ type Models struct {
 func NewModels(db *sql.DB) Models {
 	return Models{
 		Schools: SchoolModel{DB: db},
+		Users:     UserModel{DB: db},
 	}
 } 
