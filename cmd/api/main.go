@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"flag"
 	"os"
+	"sync"
 	"time"
 
 	"appletree.desireamagwula.net/internals/data"
@@ -48,6 +49,7 @@ type application struct {
 	logger *jsonlog.Logger
 	models data.Models
 	mailer mailer.Mailer
+	wg sync.WaitGroup
 }
 
 func main() {
@@ -66,8 +68,8 @@ func main() {
 	// These are our flags for the mailer 
 	flag.StringVar(&cfg.smtp.host, "smtp-host", "smtp.mailtrap.io", "SMTP host")
 	flag.IntVar(&cfg.smtp.port, "smtp-port", 25, "SMTP port")
-	flag.StringVar(&cfg.smtp.username, "smtp-username", "9424542c5553fc", "SMTP username")
-	flag.StringVar(&cfg.smtp.password, "smtp-password", "78f6b90e9b3f34", "SMTP password")
+	flag.StringVar(&cfg.smtp.username, "smtp-username", "53301c9881fa59", "SMTP username")
+	flag.StringVar(&cfg.smtp.password, "smtp-password", "a3f6dffd875f13", "SMTP password")
 	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "AppleTree <no-reply@Appletree.desireamagwula.net>", "SMTP sender")
 
 

@@ -146,13 +146,20 @@ func  (app *application) readInt(qs url.Values, key string, defaultValue int, v 
 		return defaultValue
 	}
 	return intValue
-	
 }
-// func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
-// 	js := `{"status":"available", "environment": %q, "version": %q}`
-// 	js = fmt.Sprintf(js, app.config.env, version)
-// 	// Specify that we will serve our responses using JSON
-// 	w.Header().Set("Content-Type", "application/json")
-// 	// write the json as the HTTP
-// 	w.Write([]byte(js))
-// }
+//background accepts a function as its parameter
+func (app *application) background (fn func()) {
+	// increment the waitGroup counter
+	app.wg.Add(1)
+	go func () {
+		defer app.wg.Done()
+		// Recover from panic
+		defer func() {
+			if err := recover(); err != nil {
+				app.logger.PrintError(fmt.Errorf("%s", err),nil)
+			}
+		}()
+		fn()
+	}()
+}
+
